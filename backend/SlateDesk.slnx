@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SlateDesk.Api/SlateDesk.Api.csproj" />
+    <Project Path="src/SlateDesk.Application/SlateDesk.Application.csproj" />
+    <Project Path="src/SlateDesk.Domain/SlateDesk.Domain.csproj" />
+    <Project Path="src/SlateDesk.Infrastructure/SlateDesk.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SlateDesk.IntegrationTests/SlateDesk.IntegrationTests.csproj" />
+    <Project Path="tests/SlateDesk.UnitTests/SlateDesk.UnitTests.csproj" />
+  </Folder>
+</Solution>
