@@ -110,11 +110,11 @@ internal sealed class TeacherAllocationConfiguration
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(allocation => new
-            {
-                allocation.TeacherId,
-                allocation.AcademicClassId,
-                allocation.SubjectId
-            })
+        {
+            allocation.TeacherId,
+            allocation.AcademicClassId,
+            allocation.SubjectId
+        })
             .IsUnique();
 
         builder.HasIndex(allocation => new
