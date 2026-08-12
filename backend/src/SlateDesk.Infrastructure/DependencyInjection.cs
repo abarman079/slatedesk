@@ -14,6 +14,8 @@ using SlateDesk.Infrastructure.BackgroundJobs;
 using SlateDesk.Infrastructure.Identity;
 using SlateDesk.Infrastructure.Persistence;
 using SlateDesk.Infrastructure.Persistence.Seed;
+using SlateDesk.Application.Admin.Interfaces;
+using SlateDesk.Infrastructure.Admin;
 
 namespace SlateDesk.Infrastructure;
 
@@ -250,6 +252,16 @@ public static class DependencyInjection
                 ApplicationDbContext>(
                     "postgresql");
 
+        services.AddScoped<
+            IAdminUserService,
+            AdminUserService>();
+        services.AddScoped<
+            IAdminAcademicService,
+            AdminAcademicService>();
+
+        services.AddScoped<
+            IAdminSetupService,
+            AdminSetupService>();
         return services;
     }
 }

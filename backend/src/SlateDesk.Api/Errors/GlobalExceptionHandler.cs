@@ -110,6 +110,27 @@ public sealed class GlobalExceptionHandler
                     "Access forbidden",
                     "You do not have permission to perform this action."),
 
+            ResourceNotFoundException =>
+                new ProblemMapping(
+                    StatusCodes.Status404NotFound,
+                    "https://slatedesk.local/errors/not-found",
+                    "Resource not found",
+                    exception.Message),
+
+            ConflictException =>
+                new ProblemMapping(
+                    StatusCodes.Status409Conflict,
+                    "https://slatedesk.local/errors/conflict",
+                    "Conflict",
+                    exception.Message),
+
+            BusinessRuleException =>
+                new ProblemMapping(
+                    StatusCodes.Status400BadRequest,
+                    "https://slatedesk.local/errors/business-rule",
+                    "Business rule violated",
+                    exception.Message),
+
             DbUpdateConcurrencyException =>
                 new ProblemMapping(
                     StatusCodes.Status409Conflict,
