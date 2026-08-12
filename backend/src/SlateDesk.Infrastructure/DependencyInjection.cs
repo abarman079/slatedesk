@@ -16,6 +16,8 @@ using SlateDesk.Infrastructure.Persistence;
 using SlateDesk.Infrastructure.Persistence.Seed;
 using SlateDesk.Application.Admin.Interfaces;
 using SlateDesk.Infrastructure.Admin;
+using SlateDesk.Application.Assignments.Interfaces;
+using SlateDesk.Infrastructure.Assignments;
 
 namespace SlateDesk.Infrastructure;
 
@@ -262,6 +264,17 @@ public static class DependencyInjection
         services.AddScoped<
             IAdminSetupService,
             AdminSetupService>();
+
+        services.AddScoped<
+            IAssignmentDeadlinePolicy,
+            AssignmentDeadlinePolicy>();
+
+        services.AddScoped<
+            IAssignmentService,
+            AssignmentService>();
+
+        services.AddHostedService<
+            AssignmentDeadlineBackgroundService>();
         return services;
     }
 }
