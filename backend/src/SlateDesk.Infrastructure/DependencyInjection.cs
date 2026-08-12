@@ -18,6 +18,8 @@ using SlateDesk.Application.Admin.Interfaces;
 using SlateDesk.Infrastructure.Admin;
 using SlateDesk.Application.Assignments.Interfaces;
 using SlateDesk.Infrastructure.Assignments;
+using SlateDesk.Application.Submissions.Interfaces;
+using SlateDesk.Infrastructure.Submissions;
 
 namespace SlateDesk.Infrastructure;
 
@@ -275,6 +277,11 @@ public static class DependencyInjection
 
         services.AddHostedService<
             AssignmentDeadlineBackgroundService>();
+
+        services.AddScoped<
+            ISubmissionService,
+            SubmissionService>();
+
         return services;
     }
 }
