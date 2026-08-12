@@ -282,6 +282,10 @@ public static class DependencyInjection
             ISubmissionService,
             SubmissionService>();
 
+        services.AddScoped<
+            IAssignmentClosingService,
+            AssignmentClosingService>();
+
         return services;
     }
 }

@@ -1,9 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SlateDesk.Domain.Enums;
-using SlateDesk.Infrastructure.Persistence;
+using SlateDesk.Application.Assignments.Interfaces;
 
 namespace SlateDesk.Infrastructure.BackgroundJobs;
 
@@ -13,17 +11,14 @@ public sealed class AssignmentDeadlineBackgroundService
     private static readonly TimeSpan Interval =
         TimeSpan.FromMinutes(5);
 
-    private readonly IServiceScopeFactory
-        _scopeFactory;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     private readonly ILogger<
-        AssignmentDeadlineBackgroundService>
-        _logger;
+        AssignmentDeadlineBackgroundService> _logger;
 
     public AssignmentDeadlineBackgroundService(
         IServiceScopeFactory scopeFactory,
-        ILogger<
-            AssignmentDeadlineBackgroundService>
+        ILogger<AssignmentDeadlineBackgroundService>
             logger)
     {
         _scopeFactory = scopeFactory;
@@ -33,13 +28,31 @@ public sealed class AssignmentDeadlineBackgroundService
     protected override async Task ExecuteAsync(
         CancellationToken stoppingToken)
     {
-        while (!stoppingToken
-            .IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                await CloseExpiredAssignmentsAsync(
-                    stoppingToken);
+                using IServiceScope scope =
+                    _scopeFactory.CreateScope();
+
+                IAssignmentClosingService
+                    closingService =
+                        scope.ServiceProvider
+                            .GetRequiredService<
+                                IAssignmentClosingService>();
+
+                int closedCount =
+                    await closingService
+                        .CloseExpiredAssignmentsAsync(
+                            DateTime.UtcNow,
+                            stoppingToken);
+
+                if (closedCount > 0)
+                {
+                    _logger.LogInformation(
+                        "Automatically closed {AssignmentCount} expired assignments.",
+                        closedCount);
+                }
             }
             catch (OperationCanceledException)
                 when (stoppingToken
@@ -57,47 +70,6 @@ public sealed class AssignmentDeadlineBackgroundService
             await Task.Delay(
                 Interval,
                 stoppingToken);
-        }
-    }
-
-    private async Task
-        CloseExpiredAssignmentsAsync(
-            CancellationToken cancellationToken)
-    {
-        using IServiceScope scope =
-            _scopeFactory.CreateScope();
-
-        ApplicationDbContext dbContext =
-            scope.ServiceProvider
-                .GetRequiredService<
-                    ApplicationDbContext>();
-
-        DateTime utcNow = DateTime.UtcNow;
-
-        int updated =
-            await dbContext.Assignments
-                .Where(assignment =>
-                    assignment.Status ==
-                        AssignmentStatus.Published &&
-                    assignment.DeadlineUtc <=
-                        utcNow)
-                .ExecuteUpdateAsync(
-                    setters => setters
-                        .SetProperty(
-                            assignment =>
-                                assignment.Status,
-                            AssignmentStatus.Closed)
-                        .SetProperty(
-                            assignment =>
-                                assignment.UpdatedAtUtc,
-                            utcNow),
-                    cancellationToken);
-
-        if (updated > 0)
-        {
-            _logger.LogInformation(
-                "Automatically closed {AssignmentCount} expired assignments.",
-                updated);
         }
     }
 }
