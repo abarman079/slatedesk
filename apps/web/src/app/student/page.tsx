@@ -3,19 +3,17 @@ import {
 } from "@/components/app-shell";
 
 import {
-  RoleDashboard,
-} from "@/components/role-dashboard";
+  StudentDashboardView,
+} from "@/features/student/student-dashboard";
 
-export default function StudentPage() {
+export default function Page() {
   return (
     <AppShell
       role="Student"
       title="Student workspace"
-      subtitle="Assignments and results"
+      subtitle="Assignments and progress"
     >
-      <RoleDashboard
-        role="Student"
-      />
+      <StudentDashboardView />
     </AppShell>
   );
 }
