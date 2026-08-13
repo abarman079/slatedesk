@@ -105,6 +105,14 @@ public sealed record TeacherAssignmentDto(
     int SubmissionCount,
     bool IsPastDeadline);
 
+public sealed record TeacherAllocationOptionDto(
+    Guid AcademicClassId,
+    string ClassName,
+    string ClassCode,
+    Guid SubjectId,
+    string SubjectName,
+    string SubjectCode);
+
 public sealed record StudentAssignmentDto(
     Guid Id,
     string TeacherName,

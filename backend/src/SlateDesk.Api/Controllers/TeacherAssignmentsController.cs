@@ -38,6 +38,20 @@ public sealed class TeacherAssignmentsController
                     cancellationToken));
     }
 
+    [HttpGet("allocation-options")]
+    public async Task<ActionResult<
+        IReadOnlyCollection<
+            TeacherAllocationOptionDto>>>
+        GetAllocationOptions(
+            CancellationToken cancellationToken)
+    {
+        return Ok(
+            await _service
+                .GetTeacherAllocationOptionsAsync(
+                    CurrentUserId(),
+                    cancellationToken));
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<
         ActionResult<TeacherAssignmentDto>> GetById(
@@ -79,11 +93,12 @@ public sealed class TeacherAssignmentsController
         CancellationToken cancellationToken)
     {
         return Ok(
-            await _service.UpdateAssignmentAsync(
-                id,
-                CurrentUserId(),
-                request,
-                cancellationToken));
+            await _service
+                .UpdateAssignmentAsync(
+                    id,
+                    CurrentUserId(),
+                    request,
+                    cancellationToken));
     }
 
     [HttpDelete("{id:guid}")]
@@ -91,10 +106,11 @@ public sealed class TeacherAssignmentsController
         Guid id,
         CancellationToken cancellationToken)
     {
-        await _service.DeleteAssignmentAsync(
-            id,
-            CurrentUserId(),
-            cancellationToken);
+        await _service
+            .DeleteAssignmentAsync(
+                id,
+                CurrentUserId(),
+                cancellationToken);
 
         return NoContent();
     }
@@ -120,10 +136,11 @@ public sealed class TeacherAssignmentsController
         CancellationToken cancellationToken)
     {
         return Ok(
-            await _service.CloseAssignmentAsync(
-                id,
-                CurrentUserId(),
-                cancellationToken));
+            await _service
+                .CloseAssignmentAsync(
+                    id,
+                    CurrentUserId(),
+                    cancellationToken));
     }
 
     private string CurrentUserId()
