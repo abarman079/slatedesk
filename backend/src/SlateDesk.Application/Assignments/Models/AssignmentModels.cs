@@ -130,6 +130,7 @@ public sealed record StudentAssignmentDto(
     bool AllowResubmission,
     bool AllowLateSubmission,
     AssignmentStatus Status,
+    DateTime? PublishedAtUtc,
     SubmissionStatus? SubmissionStatus,
     bool IsPastDeadline,
     bool CanSubmit,

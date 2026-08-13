@@ -13,6 +13,7 @@ public sealed class AssignmentService
     : IAssignmentService
 {
     private readonly ApplicationDbContext _dbContext;
+
     private readonly IAssignmentDeadlinePolicy
         _deadlinePolicy;
 
@@ -234,7 +235,8 @@ public sealed class AssignmentService
             IsArchived = false
         };
 
-        _dbContext.Assignments.Add(assignment);
+        _dbContext.Assignments.Add(
+            assignment);
 
         AddAudit(
             teacherId,
@@ -309,7 +311,8 @@ public sealed class AssignmentService
             cancellationToken);
 
         DateTime deadlineUtc =
-            NormalizeUtc(request.DeadlineUtc);
+            NormalizeUtc(
+                request.DeadlineUtc);
 
         if (assignment.Status ==
                 AssignmentStatus.Published &&
@@ -387,8 +390,10 @@ public sealed class AssignmentService
         if (hasSubmissions)
         {
             assignment.IsArchived = true;
+
             assignment.Status =
                 AssignmentStatus.Archived;
+
             assignment.UpdatedAtUtc =
                 DateTime.UtcNow;
 
@@ -619,6 +624,7 @@ public sealed class AssignmentService
                         assignment.AllowResubmission,
                         assignment.AllowLateSubmission,
                         assignment.Status,
+                        assignment.PublishedAtUtc,
                         _dbContext.Submissions
                             .Where(submission =>
                                 submission.AssignmentId ==
@@ -634,7 +640,8 @@ public sealed class AssignmentService
 
         StudentAssignmentDto[] items =
             rows
-                .Select(MapStudentAssignment)
+                .Select(
+                    MapStudentAssignment)
                 .ToArray();
 
         return PagedResult<
@@ -694,6 +701,7 @@ public sealed class AssignmentService
                         assignment.AllowResubmission,
                         assignment.AllowLateSubmission,
                         assignment.Status,
+                        assignment.PublishedAtUtc,
                         _dbContext.Submissions
                             .Where(submission =>
                                 submission.AssignmentId ==
@@ -713,7 +721,8 @@ public sealed class AssignmentService
                 "The assignment was not found.");
         }
 
-        return MapStudentAssignment(row);
+        return MapStudentAssignment(
+            row);
     }
 
     private IQueryable<Assignment>
@@ -785,8 +794,10 @@ public sealed class AssignmentService
             Guid subjectId,
             CancellationToken cancellationToken)
     {
-        if (academicClassId == Guid.Empty ||
-            subjectId == Guid.Empty)
+        if (academicClassId ==
+                Guid.Empty ||
+            subjectId ==
+                Guid.Empty)
         {
             throw new BusinessRuleException(
                 "A valid class and subject are required.");
@@ -844,6 +855,7 @@ public sealed class AssignmentService
             row.AllowResubmission,
             row.AllowLateSubmission,
             row.Status,
+            row.PublishedAtUtc,
             row.SubmissionStatus,
             decision.IsPastDeadline,
             decision.CanSubmit,
@@ -864,7 +876,8 @@ public sealed class AssignmentService
                 EntityType = "Assignment",
                 EntityId =
                     assignmentId.ToString(),
-                Description = description,
+                Description =
+                    description,
                 CreatedAtUtc =
                     DateTime.UtcNow
             });
@@ -878,14 +891,17 @@ public sealed class AssignmentService
         DateTime deadlineUtc,
         decimal maximumMarks)
     {
-        if (academicClassId == Guid.Empty ||
-            subjectId == Guid.Empty)
+        if (academicClassId ==
+                Guid.Empty ||
+            subjectId ==
+                Guid.Empty)
         {
             throw new BusinessRuleException(
                 "A valid class and subject are required.");
         }
 
-        if (string.IsNullOrWhiteSpace(title))
+        if (string.IsNullOrWhiteSpace(
+                title))
         {
             throw new BusinessRuleException(
                 "Assignment title is required.");
@@ -898,7 +914,8 @@ public sealed class AssignmentService
                 "Assignment description is required.");
         }
 
-        if (deadlineUtc == default)
+        if (deadlineUtc ==
+            default)
         {
             throw new BusinessRuleException(
                 "A valid deadline is required.");
@@ -912,24 +929,31 @@ public sealed class AssignmentService
     }
 
     private static string?
-        NormalizeOptional(string? value)
+        NormalizeOptional(
+            string? value)
     {
-        return string.IsNullOrWhiteSpace(value)
+        return string.IsNullOrWhiteSpace(
+                value)
             ? null
             : value.Trim();
     }
 
-    private static DateTime NormalizeUtc(
-        DateTime value)
+    private static DateTime
+        NormalizeUtc(
+            DateTime value)
     {
         return value.Kind switch
         {
-            DateTimeKind.Utc => value,
+            DateTimeKind.Utc =>
+                value,
+
             DateTimeKind.Local =>
                 value.ToUniversalTime(),
-            _ => DateTime.SpecifyKind(
-                value,
-                DateTimeKind.Utc)
+
+            _ =>
+                DateTime.SpecifyKind(
+                    value,
+                    DateTimeKind.Utc)
         };
     }
 
@@ -950,5 +974,6 @@ public sealed class AssignmentService
         bool AllowResubmission,
         bool AllowLateSubmission,
         AssignmentStatus Status,
+        DateTime? PublishedAtUtc,
         SubmissionStatus? SubmissionStatus);
 }
