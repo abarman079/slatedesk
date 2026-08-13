@@ -62,7 +62,13 @@ export function ReviewStackSkeleton() {
   );
 }
 
-export function DashboardSkeleton() {
+export function DashboardSkeleton({
+  statCount = 4,
+  columns = 4,
+}: {
+  statCount?: number;
+  columns?: 3 | 4;
+}) {
   return (
     <div className="dashboard-skeleton">
       <div className="dashboard-skeleton-heading">
@@ -70,16 +76,60 @@ export function DashboardSkeleton() {
         <Skeleton className="sk-subheading" />
       </div>
 
-      <div className="dashboard-skeleton-grid">
-        {[1, 2, 3].map((item) => (
-          <Card key={item}>
-            <Skeleton className="sk-stat-label" />
-            <Skeleton className="sk-stat-value" />
-          </Card>
-        ))}
+      <div
+        className={`dashboard-skeleton-grid skeleton-columns-${columns}`}
+      >
+        {Array.from({
+          length: statCount,
+        }).map(
+          (_, index) => (
+            <Card key={index}>
+              <Skeleton className="sk-stat-label" />
+              <Skeleton className="sk-stat-value" />
+            </Card>
+          ),
+        )}
       </div>
 
-      <AssignmentLedgerSkeleton />
+      <Card className="dashboard-chart-skeleton">
+        <Skeleton className="sk-code" />
+        <Skeleton className="sk-title" />
+        <Skeleton className="sk-chart-block" />
+      </Card>
     </div>
+  );
+}
+
+
+
+export function StudentFolioSkeleton() {
+  return (
+    <Card className="student-folio-skeleton">
+      <div className="student-folio-skeleton-edge" />
+
+      <div className="student-folio-skeleton-body">
+        <div className="sk-footer">
+          <Skeleton className="sk-code" />
+          <Skeleton className="sk-pill" />
+        </div>
+
+        <Skeleton className="sk-title" />
+
+        <Skeleton className="sk-answer-line" />
+        <Skeleton className="sk-answer-line short" />
+
+        <div className="sk-meta-row">
+          <Skeleton className="sk-meta" />
+          <Skeleton className="sk-meta" />
+        </div>
+
+        <Skeleton className="sk-rail" />
+
+        <div className="sk-footer">
+          <Skeleton className="sk-meta" />
+          <Skeleton className="sk-button" />
+        </div>
+      </div>
+    </Card>
   );
 }

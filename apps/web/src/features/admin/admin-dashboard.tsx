@@ -7,8 +7,16 @@ import {
 } from "lucide-react";
 
 import {
+  DashboardSkeleton,
+} from "@/components/skeleton-patterns";
+
+import {
   useQuery,
 } from "@tanstack/react-query";
+
+import {
+  DashboardChart,
+} from "@/components/dashboard-chart";
 
 import {
   Button,
@@ -46,12 +54,13 @@ export function AdminDashboardView() {
     });
 
   if (query.isLoading) {
-    return (
-      <p className="muted">
-        Loading institution overview…
-      </p>
-    );
-  }
+  return (
+    <DashboardSkeleton
+      statCount={6}
+      columns={3}
+    />
+  );
+}
 
   if (query.error) {
     return (
@@ -95,6 +104,40 @@ export function AdminDashboardView() {
       query.data.totalSubmissions,
     ],
   ] as const;
+
+  const chartData = [
+    {
+      label: "Teachers",
+      value:
+        query.data.activeTeachers,
+    },
+    {
+      label: "Students",
+      value:
+        query.data.activeStudents,
+    },
+    {
+      label: "Classes",
+      value:
+        query.data.activeClasses,
+    },
+    {
+      label: "Subjects",
+      value:
+        query.data.activeSubjects,
+    },
+    {
+      label: "Published",
+      value:
+        query.data
+          .publishedAssignments,
+    },
+    {
+      label: "Submissions",
+      value:
+        query.data.totalSubmissions,
+    },
+  ];
 
   return (
     <>
@@ -146,6 +189,34 @@ export function AdminDashboardView() {
           ),
         )}
       </section>
+
+      <Card
+        className="dashboard-chart-card"
+        style={{
+          marginTop: 18,
+        }}
+      >
+        <div className="dashboard-chart-heading">
+          <div>
+            <p className="eyebrow">
+              Institution pulse
+            </p>
+
+            <h2>
+              Academic structure at a glance
+            </h2>
+          </div>
+
+          <span className="dashboard-chart-note">
+            Live database summary
+          </span>
+        </div>
+
+        <DashboardChart
+          data={chartData}
+          ariaLabel="Institution summary chart"
+        />
+      </Card>
 
       <Card
         style={{

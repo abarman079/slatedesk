@@ -1,18 +1,12 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  useQuery,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-import {
-  Button,
-  EmptyState,
-  Input,
-} from "@/components/ui";
+import { StudentFolioSkeleton } from "@/components/skeleton-patterns";
+
+import { Button, EmptyState, Input } from "@/components/ui";
 
 import {
   StudentAssignmentFolio,
@@ -20,45 +14,27 @@ import {
   StudentPageHeading,
 } from "@/features/student/student-shared";
 
-import {
-  useAuth,
-} from "@/features/auth/auth-provider";
+import { useAuth } from "@/features/auth/auth-provider";
 
-import type {
-  PagedResult,
-  StudentAssignment,
-} from "@/types/student";
+import type { PagedResult, StudentAssignment } from "@/types/student";
 
 export function StudentAssignmentList() {
-  const {
-    request,
-  } = useAuth();
+  const { request } = useAuth();
 
-  const [page, setPage] =
-    useState(1);
+  const [page, setPage] = useState(1);
 
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
-  const query =
-    useQuery({
-      queryKey: [
-        "student-assignment-list",
-        page,
-        search,
-      ],
+  const query = useQuery({
+    queryKey: ["student-assignment-list", page, search],
 
-      queryFn: () =>
-        request<
-          PagedResult<
-            StudentAssignment
-          >
-        >(
-          `/api/v1/student/assignments?page=${page}&pageSize=12&search=${encodeURIComponent(
-            search,
-          )}`,
-        ),
-    });
+    queryFn: () =>
+      request<PagedResult<StudentAssignment>>(
+        `/api/v1/student/assignments?page=${page}&pageSize=12&search=${encodeURIComponent(
+          search,
+        )}`,
+      ),
+  });
 
   return (
     <>
@@ -76,17 +52,17 @@ export function StudentAssignmentList() {
           onChange={(event) => {
             setPage(1);
 
-            setSearch(
-              event.target.value,
-            );
+            setSearch(event.target.value);
           }}
         />
       </div>
 
       {query.isLoading && (
-        <p className="muted">
-          Loading assignments…
-        </p>
+        <div className="student-folio-grid">
+          {[1, 2, 3, 4].map((item) => (
+            <StudentFolioSkeleton key={item} />
+          ))}
+        </div>
       )}
 
       {query.error && (
@@ -99,83 +75,52 @@ export function StudentAssignmentList() {
         />
       )}
 
-      {query.data &&
-        query.data.items.length ===
-          0 && (
-          <EmptyState
-            eyebrow="Assignment ledger"
-            title="No assignments found"
-            description="There are no published assignments matching this view."
-          />
-        )}
+      {query.data && query.data.items.length === 0 && (
+        <EmptyState
+          eyebrow="Assignment ledger"
+          title="No assignments found"
+          description="There are no published assignments matching this view."
+        />
+      )}
 
-      {query.data &&
-        query.data.items.length >
-          0 && (
-          <>
-            <div className="student-folio-grid">
-              {query.data.items.map(
-                (assignment) => (
-                  <StudentAssignmentFolio
-                    key={
-                      assignment.id
-                    }
-                    assignment={
-                      assignment
-                    }
-                  />
-                ),
-              )}
+      {query.data && query.data.items.length > 0 && (
+        <>
+          <div className="student-folio-grid">
+            {query.data.items.map((assignment) => (
+              <StudentAssignmentFolio
+                key={assignment.id}
+                assignment={assignment}
+              />
+            ))}
+          </div>
+
+          {query.data.totalPages > 1 && (
+            <div className="pager">
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={page <= 1}
+                onClick={() => setPage((value) => value - 1)}
+              >
+                Previous
+              </Button>
+
+              <span>
+                Page {page} of {query.data.totalPages}
+              </span>
+
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={page >= query.data.totalPages}
+                onClick={() => setPage((value) => value + 1)}
+              >
+                Next
+              </Button>
             </div>
-
-            {query.data.totalPages >
-              1 && (
-              <div className="pager">
-                <Button
-                  variant="secondary"
-                  size="small"
-                  disabled={
-                    page <= 1
-                  }
-                  onClick={() =>
-                    setPage(
-                      (value) =>
-                        value - 1,
-                    )
-                  }
-                >
-                  Previous
-                </Button>
-
-                <span>
-                  Page {page} of{" "}
-                  {
-                    query.data
-                      .totalPages
-                  }
-                </span>
-
-                <Button
-                  variant="secondary"
-                  size="small"
-                  disabled={
-                    page >=
-                    query.data
-                      .totalPages
-                  }
-                  onClick={() =>
-                    setPage(
-                      (value) =>
-                        value + 1,
-                    )
-                  }
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+          )}
+        </>
+      )}
     </>
   );
 }
