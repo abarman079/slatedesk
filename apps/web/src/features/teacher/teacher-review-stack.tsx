@@ -1,25 +1,12 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  RefreshCw,
-} from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  Button,
-  EmptyState,
-  Input,
-  Textarea,
-} from "@/components/ui";
+import { Button, EmptyState, Input, Textarea } from "@/components/ui";
 
 import {
   SubmissionStatusBadge,
@@ -28,28 +15,19 @@ import {
   formatTeacherDate,
 } from "@/features/teacher/teacher-shared";
 
-import {
-  useAuth,
-} from "@/features/auth/auth-provider";
+import { ReviewStackSkeleton } from "@/components/skeleton-patterns";
 
-import {
-  ApiError,
-} from "@/lib/api-client";
+import { useAuth } from "@/features/auth/auth-provider";
 
-import type {
-  PagedResult,
-  TeacherSubmission,
-} from "@/types/teacher";
+import { ApiError } from "@/lib/api-client";
 
-function initials(
-  value: string,
-) {
+import type { PagedResult, TeacherSubmission } from "@/types/teacher";
+
+function initials(value: string) {
   return value
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) =>
-      part.charAt(0),
-    )
+    .map((part) => part.charAt(0))
     .join("")
     .toUpperCase();
 }
@@ -66,79 +44,40 @@ function ReviewPanel({
   statusPending: boolean;
   gradePending: boolean;
 
-  onStatus: (
-    status:
-      | "UnderReview"
-      | "NeedsRevision",
-    version: number,
-  ) => void;
+  onStatus: (status: "UnderReview" | "NeedsRevision", version: number) => void;
 
-  onGrade: (
-    marks: number,
-    feedback: string,
-    version: number,
-  ) => void;
+  onGrade: (marks: number, feedback: string, version: number) => void;
 }) {
-  const [marks, setMarks] =
-    useState(
-      submission.marksAwarded
-        ?.toString() ?? "",
-    );
+  const [marks, setMarks] = useState(submission.marksAwarded?.toString() ?? "");
 
-  const [
-    feedback,
-    setFeedback,
-  ] = useState(
-    submission
-      .teacherFeedback ?? "",
-  );
+  const [feedback, setFeedback] = useState(submission.teacherFeedback ?? "");
 
-  const numericMarks =
-    Number(marks);
+  const numericMarks = Number(marks);
 
   const invalidMarks =
-    marks.trim() === "" ||
-    Number.isNaN(
-      numericMarks,
-    ) ||
-    numericMarks < 0;
+    marks.trim() === "" || Number.isNaN(numericMarks) || numericMarks < 0;
 
   return (
     <div className="review-stack-detail">
       <div className="ledger-card-top">
         <div>
-          <p className="eyebrow">
-            Student response
-          </p>
+          <p className="eyebrow">Student response</p>
 
           <h2
             style={{
-              margin:
-                "8px 0 3px",
-              fontFamily:
-                "var(--font-serif)",
-              fontSize:
-                "1.8rem",
+              margin: "8px 0 3px",
+              fontFamily: "var(--font-serif)",
+              fontSize: "1.8rem",
               fontWeight: 580,
             }}
           >
-            {
-              submission.studentName
-            }
+            {submission.studentName}
           </h2>
 
-          <p className="muted">
-            {
-              submission.studentEmail
-            }
-          </p>
+          <p className="muted">{submission.studentEmail}</p>
         </div>
 
-        <SubmissionStatusBadge
-          status={
-            submission.status
-          }
-        />
+        <SubmissionStatusBadge status={submission.status} />
       </div>
 
       <div
@@ -148,99 +87,59 @@ function ReviewPanel({
         }}
       >
         <div className="teacher-meta-row">
-          <span>
-            Submitted
-          </span>
+          <span>Submitted</span>
 
-          <strong>
-            {formatTeacherDate(
-              submission
-                .submittedAtUtc,
-            )}
-          </strong>
+          <strong>{formatTeacherDate(submission.submittedAtUtc)}</strong>
         </div>
 
         <div className="teacher-meta-row">
-          <span>
-            Last update
-          </span>
+          <span>Last update</span>
 
-          <strong>
-            {formatTeacherDate(
-              submission
-                .updatedAtUtc,
-            )}
-          </strong>
+          <strong>{formatTeacherDate(submission.updatedAtUtc)}</strong>
         </div>
 
         <div className="teacher-meta-row">
-          <span>
-            Submission type
-          </span>
+          <span>Submission type</span>
 
           <strong>
-            {submission.isLate
-              ? "Late submission"
-              : "On-time submission"}
+            {submission.isLate ? "Late submission" : "On-time submission"}
           </strong>
         </div>
       </div>
 
-      <div className="review-answer">
-        {submission.answerText}
-      </div>
+      <div className="review-answer">{submission.answerText}</div>
 
-      {submission.status !==
-        "Draft" &&
-        submission.status !==
-          "Graded" && (
-          <div
-            className="review-actions"
-            style={{
-              marginTop: 18,
-            }}
+      {submission.status !== "Draft" && submission.status !== "Graded" && (
+        <div
+          className="review-actions"
+          style={{
+            marginTop: 18,
+          }}
+        >
+          <Button
+            variant="secondary"
+            size="small"
+            disabled={statusPending}
+            onClick={() => onStatus("UnderReview", submission.version)}
           >
-            <Button
-              variant="secondary"
-              size="small"
-              disabled={
-                statusPending
-              }
-              onClick={() =>
-                onStatus(
-                  "UnderReview",
-                  submission.version,
-                )
-              }
-            >
-              Mark under review
-            </Button>
+            Mark under review
+          </Button>
 
-            <Button
-              variant="secondary"
-              size="small"
-              disabled={
-                statusPending
-              }
-              onClick={() =>
-                onStatus(
-                  "NeedsRevision",
-                  submission.version,
-                )
-              }
-            >
-              Request revision
-            </Button>
-          </div>
-        )}
+          <Button
+            variant="secondary"
+            size="small"
+            disabled={statusPending}
+            onClick={() => onStatus("NeedsRevision", submission.version)}
+          >
+            Request revision
+          </Button>
+        </div>
+      )}
 
-      {submission.status !==
-        "Draft" && (
+      {submission.status !== "Draft" && (
         <div className="review-grading">
           <div className="form-field">
-            <label htmlFor="grade-marks">
-              Marks
-            </label>
+            <label htmlFor="grade-marks">Marks</label>
 
             <Input
               id="grade-marks"
@@ -248,49 +147,31 @@ function ReviewPanel({
               min="0"
               step="0.01"
               value={marks}
-              onChange={(event) =>
-                setMarks(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setMarks(event.target.value)}
             />
           </div>
 
           <div className="form-field review-feedback">
-            <label htmlFor="grade-feedback">
-              Teacher feedback
-            </label>
+            <label htmlFor="grade-feedback">Teacher feedback</label>
 
             <Textarea
               id="grade-feedback"
               value={feedback}
               placeholder="Write concise, useful academic feedback."
-              onChange={(event) =>
-                setFeedback(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setFeedback(event.target.value)}
             />
           </div>
 
           <div className="review-actions">
             <Button
-              disabled={
-                invalidMarks ||
-                gradePending
-              }
+              disabled={invalidMarks || gradePending}
               onClick={() =>
-                onGrade(
-                  numericMarks,
-                  feedback,
-                  submission.version,
-                )
+                onGrade(numericMarks, feedback, submission.version)
               }
             >
               {gradePending
                 ? "Saving grade…"
-                : submission.status ===
-                    "Graded"
+                : submission.status === "Graded"
                   ? "Update grade"
                   : "Save grade"}
             </Button>
@@ -301,147 +182,97 @@ function ReviewPanel({
   );
 }
 
-export function TeacherReviewStack({
-  assignmentId,
-}: {
-  assignmentId: string;
-}) {
-  const {
-    request,
-  } = useAuth();
+export function TeacherReviewStack({ assignmentId }: { assignmentId: string }) {
+  const { request } = useAuth();
 
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
 
-  const [
-    selectedId,
-    setSelectedId,
-  ] = useState<
-    string | null
-  >(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const query =
-    useQuery({
-      queryKey: [
-        "teacher-submissions",
-        assignmentId,
-      ],
+  const query = useQuery({
+    queryKey: ["teacher-submissions", assignmentId],
 
-      queryFn: () =>
-        request<
-          PagedResult<
-            TeacherSubmission
-          >
-        >(
-          `/api/v1/teacher/assignments/${assignmentId}/submissions?page=1&pageSize=100`,
-        ),
-    });
+    queryFn: () =>
+      request<PagedResult<TeacherSubmission>>(
+        `/api/v1/teacher/assignments/${assignmentId}/submissions?page=1&pageSize=100`,
+      ),
+  });
 
-  const submissions =
-    query.data?.items ?? [];
+  const submissions = query.data?.items ?? [];
 
-  const effectiveId =
-    selectedId ??
-    submissions[0]?.id ??
-    null;
+  const effectiveId = selectedId ?? submissions[0]?.id ?? null;
 
-  const selected =
-    submissions.find(
-      (item) =>
-        item.id === effectiveId,
-    ) ?? null;
+  const selected = submissions.find((item) => item.id === effectiveId) ?? null;
 
-  const statusMutation =
-    useMutation({
-      mutationFn: ({
-        submissionId,
-        status,
-        version,
-      }: {
-        submissionId: string;
-        status:
-          | "UnderReview"
-          | "NeedsRevision";
-        version: number;
-      }) =>
-        request<TeacherSubmission>(
-          `/api/v1/teacher/submissions/${submissionId}/review-status`,
-          {
-            method: "PUT",
-            body:
-              JSON.stringify({
-                status,
-                version,
-              }),
-          },
-        ),
+  const statusMutation = useMutation({
+    mutationFn: ({
+      submissionId,
+      status,
+      version,
+    }: {
+      submissionId: string;
+      status: "UnderReview" | "NeedsRevision";
+      version: number;
+    }) =>
+      request<TeacherSubmission>(
+        `/api/v1/teacher/submissions/${submissionId}/review-status`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            status,
+            version,
+          }),
+        },
+      ),
 
-      onSuccess: () =>
-        queryClient.invalidateQueries({
-          queryKey: [
-            "teacher-submissions",
-            assignmentId,
-          ],
-        }),
-    });
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["teacher-submissions", assignmentId],
+      }),
+  });
 
-  const gradeMutation =
-    useMutation({
-      mutationFn: ({
-        submissionId,
-        marksAwarded,
-        teacherFeedback,
-        version,
-      }: {
-        submissionId: string;
-        marksAwarded: number;
-        teacherFeedback: string;
-        version: number;
-      }) =>
-        request<TeacherSubmission>(
-          `/api/v1/teacher/submissions/${submissionId}/grade`,
-          {
-            method: "PUT",
-            body:
-              JSON.stringify({
-                marksAwarded,
-                teacherFeedback:
-                  teacherFeedback.trim() ||
-                  null,
-                version,
-              }),
-          },
-        ),
+  const gradeMutation = useMutation({
+    mutationFn: ({
+      submissionId,
+      marksAwarded,
+      teacherFeedback,
+      version,
+    }: {
+      submissionId: string;
+      marksAwarded: number;
+      teacherFeedback: string;
+      version: number;
+    }) =>
+      request<TeacherSubmission>(
+        `/api/v1/teacher/submissions/${submissionId}/grade`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            marksAwarded,
+            teacherFeedback: teacherFeedback.trim() || null,
+            version,
+          }),
+        },
+      ),
 
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: [
-            "teacher-submissions",
-            assignmentId,
-          ],
-        });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["teacher-submissions", assignmentId],
+      });
 
-        await queryClient.invalidateQueries({
-          queryKey: [
-            "teacher-assignments",
-          ],
-        });
+      await queryClient.invalidateQueries({
+        queryKey: ["teacher-assignments"],
+      });
 
-        await queryClient.invalidateQueries({
-          queryKey: [
-            "teacher-dashboard",
-          ],
-        });
-      },
-    });
+      await queryClient.invalidateQueries({
+        queryKey: ["teacher-dashboard"],
+      });
+    },
+  });
 
-  const error =
-    statusMutation.error ??
-    gradeMutation.error;
+  const error = statusMutation.error ?? gradeMutation.error;
 
-  const concurrencyError =
-    error instanceof ApiError &&
-    error.status === 409;
+  const concurrencyError = error instanceof ApiError && error.status === 409;
 
   return (
     <>
@@ -451,26 +282,15 @@ export function TeacherReviewStack({
         description="Read the answer in context, move it through review, and return a grade without losing the Student's latest update."
         action={
           concurrencyError ? (
-            <Button
-              variant="secondary"
-              onClick={() =>
-                void query.refetch()
-              }
-            >
-              <RefreshCw
-                size={16}
-              />
+            <Button variant="secondary" onClick={() => void query.refetch()}>
+              <RefreshCw size={16} />
               Reload latest data
             </Button>
           ) : undefined
         }
       />
 
-      {query.isLoading && (
-        <p className="muted">
-          Loading submissions…
-        </p>
-      )}
+      {query.isLoading && <ReviewStackSkeleton />}
 
       {query.error && (
         <TeacherError
@@ -500,133 +320,75 @@ export function TeacherReviewStack({
         </div>
       )}
 
-      {!query.isLoading &&
-        submissions.length ===
-          0 && (
-          <EmptyState
-            eyebrow="Review stack"
-            title="No submissions yet"
-            description="Student submissions will appear here once work is saved and submitted."
-          />
-        )}
+      {!query.isLoading && submissions.length === 0 && (
+        <EmptyState
+          eyebrow="Review stack"
+          title="No submissions yet"
+          description="Student submissions will appear here once work is saved and submitted."
+        />
+      )}
 
-      {submissions.length >
-        0 && (
+      {submissions.length > 0 && (
         <div className="review-stack">
           <aside className="review-stack-list">
             <div className="review-stack-list-head">
-              <h2>
-                Students
-              </h2>
+              <h2>Students</h2>
 
-              <span className="muted">
-                {
-                  submissions.length
-                }{" "}
-                submissions
-              </span>
+              <span className="muted">{submissions.length} submissions</span>
             </div>
 
-            {submissions.map(
-              (submission) => (
-                <button
-                  key={
-                    submission.id
-                  }
-                  type="button"
-                  className={`review-person-button ${
-                    submission.id ===
-                    effectiveId
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setSelectedId(
-                      submission.id,
-                    )
-                  }
-                >
-                  <span className="review-avatar">
-                    {initials(
-                      submission
-                        .studentName,
-                    )}
+            {submissions.map((submission) => (
+              <button
+                key={submission.id}
+                type="button"
+                className={`review-person-button ${
+                  submission.id === effectiveId ? "active" : ""
+                }`}
+                onClick={() => setSelectedId(submission.id)}
+              >
+                <span className="review-avatar">
+                  {initials(submission.studentName)}
+                </span>
+
+                <span>
+                  <span className="review-person-name">
+                    {submission.studentName}
                   </span>
 
-                  <span>
-                    <span className="review-person-name">
-                      {
-                        submission
-                          .studentName
-                      }
-                    </span>
-
-                    <span className="review-person-email">
-                      {
-                        submission
-                          .studentEmail
-                      }
-                    </span>
+                  <span className="review-person-email">
+                    {submission.studentEmail}
                   </span>
+                </span>
 
-                  <SubmissionStatusBadge
-                    status={
-                      submission
-                        .status
-                    }
-                  />
-                </button>
-              ),
-            )}
+                <SubmissionStatusBadge status={submission.status} />
+              </button>
+            ))}
           </aside>
 
           {selected ? (
             <ReviewPanel
               key={`${selected.id}-${selected.version}`}
-              submission={
-                selected
+              submission={selected}
+              statusPending={statusMutation.isPending}
+              gradePending={gradeMutation.isPending}
+              onStatus={(status, version) =>
+                statusMutation.mutate({
+                  submissionId: selected.id,
+                  status,
+                  version,
+                })
               }
-              statusPending={
-                statusMutation
-                  .isPending
-              }
-              gradePending={
-                gradeMutation
-                  .isPending
-              }
-              onStatus={(
-                status,
-                version,
-              ) =>
-                statusMutation.mutate(
-                  {
-                    submissionId:
-                      selected.id,
-                    status,
-                    version,
-                  },
-                )
-              }
-              onGrade={(
-                marksAwarded,
-                teacherFeedback,
-                version,
-              ) =>
-                gradeMutation.mutate(
-                  {
-                    submissionId:
-                      selected.id,
-                    marksAwarded,
-                    teacherFeedback,
-                    version,
-                  },
-                )
+              onGrade={(marksAwarded, teacherFeedback, version) =>
+                gradeMutation.mutate({
+                  submissionId: selected.id,
+                  marksAwarded,
+                  teacherFeedback,
+                  version,
+                })
               }
             />
           ) : (
-            <div className="teacher-review-empty">
-              Select a submission.
-            </div>
+            <div className="teacher-review-empty">Select a submission.</div>
           )}
         </div>
       )}
