@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
     },
-    [accessToken, refreshSession],
+    [accessToken],
   );
 
   const value = useMemo(
