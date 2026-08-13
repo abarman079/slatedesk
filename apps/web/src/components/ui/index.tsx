@@ -9,90 +9,49 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 
-type ButtonProps =
-  ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?:
-      | "primary"
-      | "secondary"
-      | "ghost"
-      | "danger";
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "default" | "small";
 };
 
-export const Button = forwardRef<
-  HTMLButtonElement,
-  ButtonProps
->(function Button(
-  {
-    className = "",
-    variant = "primary",
-    size = "default",
-    ...props
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button(
+    { className = "", variant = "primary", size = "default", ...props },
+    ref,
+  ) {
+    return (
+      <button
+        ref={ref}
+        className={[
+          "ui-button",
+          `ui-button-${variant}`,
+          `ui-button-${size}`,
+          className,
+        ].join(" ")}
+        {...props}
+      />
+    );
   },
-  ref,
-) {
-  return (
-    <button
-      ref={ref}
-      className={[
-        "ui-button",
-        `ui-button-${variant}`,
-        `ui-button-${size}`,
-        className,
-      ].join(" ")}
-      {...props}
-    />
-  );
-});
+);
 
 export const Input = forwardRef<
   HTMLInputElement,
   InputHTMLAttributes<HTMLInputElement>
->(function Input(
-  {
-    className = "",
-    ...props
-  },
-  ref,
-) {
-  return (
-    <input
-      ref={ref}
-      className={`ui-input ${className}`}
-      {...props}
-    />
-  );
+>(function Input({ className = "", ...props }, ref) {
+  return <input ref={ref} className={`ui-input ${className}`} {...props} />;
 });
 
 export const Select = forwardRef<
   HTMLSelectElement,
   SelectHTMLAttributes<HTMLSelectElement>
->(function Select(
-  {
-    className = "",
-    ...props
-  },
-  ref,
-) {
-  return (
-    <select
-      ref={ref}
-      className={`ui-input ${className}`}
-      {...props}
-    />
-  );
+>(function Select({ className = "", ...props }, ref) {
+  return <select ref={ref} className={`ui-input ${className}`} {...props} />;
 });
 
 export const Textarea = forwardRef<
   HTMLTextAreaElement,
   TextareaHTMLAttributes<HTMLTextAreaElement>
->(function Textarea(
-  {
-    className = "",
-    ...props
-  },
-  ref,
-) {
+>(function Textarea({ className = "", ...props }, ref) {
   return (
     <textarea
       ref={ref}
@@ -106,12 +65,7 @@ export function Card({
   className = "",
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={`ui-card ${className}`}
-      {...props}
-    />
-  );
+  return <div className={`ui-card ${className}`} {...props} />;
 }
 
 export function Badge({
@@ -119,33 +73,13 @@ export function Badge({
   tone = "neutral",
 }: {
   children: React.ReactNode;
-  tone?:
-    | "neutral"
-    | "blue"
-    | "green"
-    | "amber"
-    | "rose";
+  tone?: "neutral" | "blue" | "green" | "amber" | "rose";
 }) {
-  return (
-    <span
-      className={`ui-badge ui-badge-${tone}`}
-    >
-      {children}
-    </span>
-  );
+  return <span className={`ui-badge ui-badge-${tone}`}>{children}</span>;
 }
 
-export function Skeleton({
-  className = "",
-}: {
-  className?: string;
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`ui-skeleton ${className}`}
-    />
-  );
+export function Skeleton({ className = "" }: { className?: string }) {
+  return <span aria-hidden="true" className={`ui-skeleton ${className}`} />;
 }
 
 export function EmptyState({
@@ -161,30 +95,19 @@ export function EmptyState({
 }) {
   return (
     <div className="empty-state">
-      <div
-        className="empty-state-mark"
-        aria-hidden="true"
-      >
+      <div className="empty-state-mark" aria-hidden="true">
         <span />
         <span />
         <span />
       </div>
 
-      {eyebrow && (
-        <p className="eyebrow">
-          {eyebrow}
-        </p>
-      )}
+      {eyebrow && <p className="eyebrow">{eyebrow}</p>}
 
       <h2>{title}</h2>
 
       <p>{description}</p>
 
-      {action && (
-        <div className="empty-state-action">
-          {action}
-        </div>
-      )}
+      {action && <div className="empty-state-action">{action}</div>}
     </div>
   );
 }
@@ -197,12 +120,16 @@ export function Toast({
   tone?: "success" | "error";
 }) {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className={`toast toast-${tone}`}
-    >
+    <div role="status" aria-live="polite" className={`toast toast-${tone}`}>
       {message}
+    </div>
+  );
+}
+
+export function Table({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="table-shell">
+      <table className="data-table">{children}</table>
     </div>
   );
 }

@@ -3,17 +3,17 @@ import {
 } from "@/components/app-shell";
 
 import {
-  AdminDashboardView,
-} from "@/features/admin/admin-dashboard";
+  AdminAssignmentsOverview,
+} from "@/features/admin/admin-overview-pages";
 
-export default function AdminPage() {
+export default function Page() {
   return (
     <AppShell
       role="Admin"
-      title="Admin workspace"
+      title="Assignments"
       subtitle="Institution overview"
     >
-      <AdminDashboardView />
+      <AdminAssignmentsOverview />
     </AppShell>
   );
 }

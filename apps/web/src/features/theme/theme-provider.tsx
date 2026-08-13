@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -27,6 +27,75 @@ const ThemeContext =
 
 const STORAGE_KEY = "slatedesk-theme";
 
+const THEME_CHANGE_EVENT =
+  "slatedesk-theme-change";
+
+function isThemeMode(
+  value: string | null,
+): value is ThemeMode {
+  return (
+    value === "light" ||
+    value === "dark" ||
+    value === "system"
+  );
+}
+
+function getThemeSnapshot(): ThemeMode {
+  const stored =
+    window.localStorage.getItem(
+      STORAGE_KEY,
+    );
+
+  return isThemeMode(stored)
+    ? stored
+    : "light";
+}
+
+function getServerThemeSnapshot():
+  ThemeMode {
+  return "light";
+}
+
+function subscribeToTheme(
+  callback: () => void,
+) {
+  function handleStorage(
+    event: StorageEvent,
+  ) {
+    if (
+      event.key === STORAGE_KEY
+    ) {
+      callback();
+    }
+  }
+
+  function handleThemeChange() {
+    callback();
+  }
+
+  window.addEventListener(
+    "storage",
+    handleStorage,
+  );
+
+  window.addEventListener(
+    THEME_CHANGE_EVENT,
+    handleThemeChange,
+  );
+
+  return () => {
+    window.removeEventListener(
+      "storage",
+      handleStorage,
+    );
+
+    window.removeEventListener(
+      THEME_CHANGE_EVENT,
+      handleThemeChange,
+    );
+  };
+}
+
 function resolveTheme(
   mode: ThemeMode,
 ): "light" | "dark" {
@@ -46,8 +115,12 @@ export function ThemeProvider({
 }: {
   children: ReactNode;
 }) {
-  const [mode, setModeState] =
-    useState<ThemeMode>("light");
+  const mode =
+    useSyncExternalStore(
+      subscribeToTheme,
+      getThemeSnapshot,
+      getServerThemeSnapshot,
+    );
 
   const applyTheme = useCallback(
     (nextMode: ThemeMode) => {
@@ -64,30 +137,16 @@ export function ThemeProvider({
   );
 
   useEffect(() => {
-    const stored =
-      window.localStorage.getItem(
-        STORAGE_KEY,
-      ) as ThemeMode | null;
+    applyTheme(mode);
 
-    const initialMode =
-      stored === "light" ||
-      stored === "dark" ||
-      stored === "system"
-        ? stored
-        : "light";
-
-    setModeState(initialMode);
-    applyTheme(initialMode);
-  }, [applyTheme]);
-
-  useEffect(() => {
     if (mode !== "system") {
       return;
     }
 
-    const media = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    );
+    const media =
+      window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      );
 
     const listener = () => {
       applyTheme("system");
@@ -103,18 +162,25 @@ export function ThemeProvider({
         "change",
         listener,
       );
-  }, [mode, applyTheme]);
+  }, [
+    mode,
+    applyTheme,
+  ]);
 
   const setMode = useCallback(
     (nextMode: ThemeMode) => {
-      setModeState(nextMode);
-
       window.localStorage.setItem(
         STORAGE_KEY,
         nextMode,
       );
 
       applyTheme(nextMode);
+
+      window.dispatchEvent(
+        new Event(
+          THEME_CHANGE_EVENT,
+        ),
+      );
     },
     [applyTheme],
   );
@@ -124,11 +190,16 @@ export function ThemeProvider({
       mode,
       setMode,
     }),
-    [mode, setMode],
+    [
+      mode,
+      setMode,
+    ],
   );
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider
+      value={value}
+    >
       {children}
     </ThemeContext.Provider>
   );

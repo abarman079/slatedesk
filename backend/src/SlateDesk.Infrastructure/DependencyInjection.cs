@@ -286,6 +286,10 @@ public static class DependencyInjection
             IAssignmentClosingService,
             AssignmentClosingService>();
 
+        services.AddScoped<
+            IAdminOverviewService,
+            AdminOverviewService>();
+
         return services;
     }
 }
