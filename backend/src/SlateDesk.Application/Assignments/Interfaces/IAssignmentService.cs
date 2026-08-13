@@ -17,6 +17,11 @@ public interface IAssignmentService
             string teacherId,
             CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<TeacherAllocationOptionDto>>
+        GetTeacherAllocationOptionsAsync(
+            string teacherId,
+            CancellationToken cancellationToken);
+
     Task<TeacherAssignmentDto>
         CreateAssignmentAsync(
             string teacherId,

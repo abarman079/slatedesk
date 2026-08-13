@@ -3,19 +3,17 @@ import {
 } from "@/components/app-shell";
 
 import {
-  RoleDashboard,
-} from "@/components/role-dashboard";
+  TeacherDashboardView,
+} from "@/features/teacher/teacher-dashboard";
 
-export default function TeacherPage() {
+export default function Page() {
   return (
     <AppShell
       role="Teacher"
       title="Teacher workspace"
       subtitle="Assignments and review"
     >
-      <RoleDashboard
-        role="Teacher"
-      />
+      <TeacherDashboardView />
     </AppShell>
   );
 }

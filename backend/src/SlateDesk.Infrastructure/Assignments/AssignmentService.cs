@@ -160,6 +160,34 @@ public sealed class AssignmentService
                 "The assignment was not found.");
     }
 
+    public async Task<
+        IReadOnlyCollection<TeacherAllocationOptionDto>>
+        GetTeacherAllocationOptionsAsync(
+            string teacherId,
+            CancellationToken cancellationToken)
+    {
+        return await _dbContext
+            .TeacherAllocations
+            .AsNoTracking()
+            .Where(allocation =>
+                allocation.TeacherId ==
+                teacherId)
+            .OrderBy(allocation =>
+                allocation.AcademicClass.Code)
+            .ThenBy(allocation =>
+                allocation.Subject.Code)
+            .Select(allocation =>
+                new TeacherAllocationOptionDto(
+                    allocation.AcademicClassId,
+                    allocation.AcademicClass.Name,
+                    allocation.AcademicClass.Code,
+                    allocation.SubjectId,
+                    allocation.Subject.Name,
+                    allocation.Subject.Code))
+            .ToArrayAsync(
+                cancellationToken);
+    }
+
     public async Task<TeacherAssignmentDto>
         CreateAssignmentAsync(
             string teacherId,
