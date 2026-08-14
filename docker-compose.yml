@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: slatedesk
+      POSTGRES_USER: slatedesk_app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - slatedesk_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U slatedesk_app -d slatedesk"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=slatedesk;Username=slatedesk_app;Password=${POSTGRES_PASSWORD}"
+
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+
+      DemoAccounts__SeedEnabled: "true"
+      DemoAccounts__Password: ${DEMO_PASSWORD}
+
+      Cors__AllowedOrigins__0: http://localhost:3000
+
+      AuthCookies__Secure: "false"
+      AuthCookies__SameSite: Lax
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+
+    restart: unless-stopped
+
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      - api
+
+volumes:
+  slatedesk_postgres_data:

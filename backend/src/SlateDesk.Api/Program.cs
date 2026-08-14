@@ -7,6 +7,9 @@ using SlateDesk.Domain.Constants;
 using SlateDesk.Infrastructure;
 using SlateDesk.Infrastructure.Persistence.Seed;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using SlateDesk.Infrastructure.Persistence;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -253,8 +256,32 @@ app.MapHealthChecks(
             }
     });
 
+using (IServiceScope scope =
+    app.Services.CreateScope())
+{
+    ApplicationDbContext dbContext =
+        scope.ServiceProvider
+            .GetRequiredService<
+                ApplicationDbContext>();
+
+    if (dbContext.Database.IsRelational())
+    {
+        await dbContext.Database
+            .MigrateAsync();
+    }
+    else
+    {
+        await dbContext.Database
+            .EnsureCreatedAsync();
+    }
+}
+
 await app.Services.SeedIdentityDataAsync(
     builder.Configuration);
+
+await app.Services
+    .SeedDemoAcademicDataAsync(
+        builder.Configuration);
 
 app.Run();
 

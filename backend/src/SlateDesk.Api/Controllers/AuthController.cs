@@ -15,11 +15,29 @@ public sealed class AuthController : ControllerBase
     private readonly IAuthenticationService
         _authenticationService;
 
+    private readonly bool
+        _secureRefreshCookie;
+
+    private readonly SameSiteMode
+        _refreshCookieSameSite;
+
     public AuthController(
-        IAuthenticationService authenticationService)
+        IAuthenticationService
+            authenticationService,
+        IConfiguration configuration)
     {
         _authenticationService =
             authenticationService;
+
+        _secureRefreshCookie =
+            configuration.GetValue(
+                "AuthCookies:Secure",
+                true);
+
+        _refreshCookieSameSite =
+            configuration.GetValue(
+                "AuthCookies:SameSite",
+                SameSiteMode.None);
     }
 
     [AllowAnonymous]
@@ -33,7 +51,8 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthenticationResponse>>
+    public async Task<
+        ActionResult<AuthenticationResponse>>
         Login(
             [FromBody] LoginRequest request,
             CancellationToken cancellationToken)
@@ -56,29 +75,35 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthenticationResponse>>
+    public async Task<
+        ActionResult<AuthenticationResponse>>
         Refresh(
             CancellationToken cancellationToken)
     {
         string? refreshToken =
-            Request.Cookies[RefreshCookieName];
+            Request.Cookies[
+                RefreshCookieName];
 
-        if (string.IsNullOrWhiteSpace(refreshToken))
+        if (string.IsNullOrWhiteSpace(
+                refreshToken))
         {
             return Problem(
                 type:
                     "https://slatedesk.local/errors/authentication",
-                title: "Authentication failed",
+                title:
+                    "Authentication failed",
                 statusCode:
-                    StatusCodes.Status401Unauthorized,
+                    StatusCodes
+                        .Status401Unauthorized,
                 detail:
                     "The refresh session is missing or expired.");
         }
 
         AuthenticationSession session =
-            await _authenticationService.RefreshAsync(
-                refreshToken,
-                cancellationToken);
+            await _authenticationService
+                .RefreshAsync(
+                    refreshToken,
+                    cancellationToken);
 
         WriteRefreshCookie(session);
 
@@ -93,11 +118,13 @@ public sealed class AuthController : ControllerBase
         CancellationToken cancellationToken)
     {
         string? refreshToken =
-            Request.Cookies[RefreshCookieName];
+            Request.Cookies[
+                RefreshCookieName];
 
-        await _authenticationService.LogoutAsync(
-            refreshToken,
-            cancellationToken);
+        await _authenticationService
+            .LogoutAsync(
+                refreshToken,
+                cancellationToken);
 
         DeleteRefreshCookie();
 
@@ -112,7 +139,8 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthenticatedUserDto>>
+    public async Task<
+        ActionResult<AuthenticatedUserDto>>
         GetCurrentUser(
             CancellationToken cancellationToken)
     {
@@ -132,7 +160,8 @@ public sealed class AuthController : ControllerBase
             RefreshCookieName,
             session.RefreshToken,
             CreateCookieOptions(
-                session.RefreshTokenExpiresAtUtc));
+                session
+                    .RefreshTokenExpiresAtUtc));
     }
 
     private void DeleteRefreshCookie()
@@ -142,23 +171,31 @@ public sealed class AuthController : ControllerBase
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Path = "/api/v1/auth"
+                Secure =
+                    _secureRefreshCookie,
+                SameSite =
+                    _refreshCookieSameSite,
+                Path =
+                    "/api/v1/auth"
             });
     }
 
-    private static CookieOptions CreateCookieOptions(
-        DateTime expiresAtUtc)
+    private CookieOptions
+        CreateCookieOptions(
+            DateTime expiresAtUtc)
     {
         return new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/api/v1/auth",
-            Expires = new DateTimeOffset(
-                expiresAtUtc)
+            Secure =
+                _secureRefreshCookie,
+            SameSite =
+                _refreshCookieSameSite,
+            Path =
+                "/api/v1/auth",
+            Expires =
+                new DateTimeOffset(
+                    expiresAtUtc)
         };
     }
 }
